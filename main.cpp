@@ -113,8 +113,6 @@ int main(int, char**) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    // Load OpenGL functions (e.g., with GLAD)
-    // gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     // Setup ImGui context
     IMGUI_CHECKVERSION();

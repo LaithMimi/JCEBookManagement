@@ -1,7 +1,9 @@
 #include "Book.h"
 
-Book::Book(std::string title, std::string author, std::string isbn,std::string publisher, int year, std::string coverImage)
-    : title(std::move(title)), author(std::move(author)), isbn(std::move(isbn)),publisher(std::move(publisher)), publish_year(year), coverImage(std::move(coverImage)) {}
+Book::Book(std::string title, std::string author, std::string isbn,
+    std::string publisher, int year, std::string coverImage)
+    : title(std::move(title)), author(std::move(author)),
+    isbn(std::move(isbn)),publisher(std::move(publisher)), publish_year(year), coverImage(std::move(coverImage)) {}
 
 std::string Book::getTitle() const { 
     return title;

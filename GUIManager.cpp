@@ -95,8 +95,6 @@ void GUIManager::displaySearchResults() {
     ImGui::EndChild();
 }
 
-
-
 void GUIManager::renderMainWindow() {
     // Get the current size of the application's main window
     ImVec2 windowSize = ImGui::GetIO().DisplaySize;
