@@ -6,6 +6,7 @@
 #include "Book.h"
 #include "JSONParser.h"
 #include "HTTPClient.h"
+  
 
 class BookManager {
 public:
@@ -26,8 +27,16 @@ public:
 
     // Method to search books by author
     std::vector<Book> searchBooksByAuthor(const std::string& author);
+ 
+  //  std::vector<Book> filterBooksByGenre(const std::string& genre);
+  //  std::vector<Book> filterBooksByYear(int year);
 
 private:
+    std::map<std::string, Book> selected_books_map;
+    Book* selected_book = nullptr;
+    std::string last_search_query;
+    bool search_by_author;
+
     std::vector<Book> books;
     JSONParser jsonParser;
     HTTPClient httpClient;  // Add HTTPClient as a member

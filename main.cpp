@@ -96,7 +96,6 @@ int main() {
 #include "BookManager.h"
 #include "GUIManager.h"
 
-
 int main(int, char**) {
     // Setup GLFW
     glfwSetErrorCallback([](int error, const char* description) {
@@ -113,15 +112,19 @@ int main(int, char**) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-
     // Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = 1.5f;  // Increase font size globally
 
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Load a custom font (optional)
+   // io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 20.0f);
+   //  ImGui_ImplOpenGL3_CreateFontsTexture();
 
     BookManager bookManager;
     GUIManager guiManager(bookManager);

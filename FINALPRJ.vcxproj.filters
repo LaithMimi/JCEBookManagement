@@ -234,7 +234,10 @@
     <ClInclude Include="include\ImGui\backends\imgui_impl_opengl3_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
+    <ClInclude Include="include\GLFW\glfw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\glad\glad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -295,5 +298,9 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="include\ImGui\examples\libs\glfw\lib-vc2010-64\glfw3.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="include\ImGui\misc\fonts\Karla-Regular.ttf" />
+    <Font Include="include\ImGui\misc\fonts\Roboto-Medium.ttf" />
   </ItemGroup>
 </Project>

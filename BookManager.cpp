@@ -1,5 +1,8 @@
 #include "BookManager.h"
 #include <iostream>
+#include <fstream>
+#include <nlohmann/json.hpp> // Include JSON library
+
 void BookManager::addBook(const Book& book) {
     books.push_back(book);
 }
@@ -51,4 +54,26 @@ std::vector<Book> BookManager::searchBooksByAuthor(const std::string& author) {
 
     return result;
 }
+
+/*
+
+std::vector<Book> BookManager::filterBooksByGenre(const std::string& genre) {
+    std::vector<Book> filteredBooks;
+    for (const auto& book : books) {
+        if (book.getGenre() == genre) {
+            filteredBooks.push_back(book);
+        }
+    }
+    return filteredBooks;
+}
+
+std::vector<Book> BookManager::filterBooksByYear(int year) {
+    std::vector<Book> filteredBooks;
+    for (const auto& book : books) {
+        if (book.getYear() == year) {
+            filteredBooks.push_back(book);
+        }
+    }
+    return filteredBooks;
+}*/
 

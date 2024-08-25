@@ -108,6 +108,7 @@ void GUIManager::renderMainWindow() {
     static char search_query[128] = "";
     static char author_query[128] = "";
     static bool search_by_author = false;
+    static float minRatingFilter = 0.0f;
 
     if (!title_search_in_progress && !author_search_in_progress) {
        
@@ -115,11 +116,22 @@ void GUIManager::renderMainWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
+        // Set the color of the text box
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
         // Adjust width of input fields based on window size
         ImGui::Text("Title:");
         ImGui::SameLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text
         ImGui::SetNextItemWidth(windowSize.x - 150); // Adjust width to fit the window
         ImGui::InputText("##search_query", search_query, IM_ARRAYSIZE(search_query));
+        ImGui::PopStyleColor(); // Revert to previous color
+
+        // Revert to the previous style
+        ImGui::PopStyleColor(3);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -132,15 +144,42 @@ void GUIManager::renderMainWindow() {
         }
 
         if (search_by_author) {
+            // Set the color of the text box
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+
             ImGui::Text("Author:");
             ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text
             ImGui::SetNextItemWidth(windowSize.x - 150); // Adjust width to fit the window
             ImGui::InputText("##author_query", author_query, IM_ARRAYSIZE(author_query));
+            ImGui::PopStyleColor(); // Revert to previous color
+
+            // Revert to the previous style
+            ImGui::PopStyleColor(3);
         }
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
+
+        // Rating filter
+       // ImGui::Text("Minimum Rating:");
+       // ImGui::SameLine();
+       // ImGui::SetNextItemWidth(windowSize.x / 2 - 150);
+        //ImGui::SliderFloat("##minRatingFilter", &minRatingFilter, 0.0f, 5.0f);
+
+        //ImGui::Spacing();
+        //ImGui::Separator();
+        //ImGui::Spacing();
+
+        // Set the color of the button
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.1f, 1.0f));
 
         // Center the submit button
         ImGui::SetCursorPosX((windowSize.x - 120) / 2);
@@ -161,10 +200,33 @@ void GUIManager::renderMainWindow() {
             else if (!search_by_author) {
                 title_search_thread = std::thread(&GUIManager::searchBooksByTitle, this, search_query);
             }
+             // Apply rating filter
+           // if (minRatingFilter > 0.0f) {
+           //     title_search_results = bookManager.filterBooksByRating(minRatingFilter);
+           //     author_search_results = bookManager.filterBooksByRating(minRatingFilter);
+           // }
         }
-    }
-    else {
-        ImGui::Text("Searching... Please wait.");
+        // Revert to the previous style
+        ImGui::PopStyleColor(3);
+    } else {
+        const char* text = "Searching... Please wait.";
+
+        // Calculate the size of the text
+        ImVec2 textSize = ImGui::CalcTextSize(text);
+
+        // Get the window's size
+        ImVec2 windowSize = ImGui::GetWindowSize();
+
+        // Calculate the centered position
+        float textPosX = (windowSize.x - textSize.x) / 2.0f;
+        float textPosY = (windowSize.y - textSize.y) / 2.0f;
+
+        // Set the cursor position to the calculated centered position
+        ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
+
+        // Draw the text
+        ImGui::Text("%s", text);
+
     }
 
     ImGui::Spacing();
