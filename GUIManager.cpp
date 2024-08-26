@@ -19,7 +19,13 @@ void GUIManager::searchBooksByTitle(const std::string& title) {
 
         title_search_results.clear();
         title_search_results = bookManager.loadBooksFromAPI(title);
-
+        // Check for books with no details
+        for (auto& book : title_search_results) {
+            if (book.getTitle().empty() || book.getAuthor().empty() ||
+                book.getISBN().empty() || book.getPublisher().empty()) {
+                no_details_found = true; // Set a flag to indicate missing details
+            }
+        }
         title_search_in_progress = false;
         title_search_completed = true;
     }
@@ -34,7 +40,13 @@ void GUIManager::searchBooksByAuthor(const std::string& author) {
 
         author_search_results.clear();
         author_search_results = bookManager.searchBooksByAuthor(author);
-
+        // Check for books with no details
+        for (auto& book : author_search_results) {
+            if (book.getTitle().empty() || book.getAuthor().empty() ||
+                book.getISBN().empty() || book.getPublisher().empty()) {
+                no_details_found = true; // Set a flag to indicate missing details
+            }
+        }
         author_search_in_progress = false;
         author_search_completed = true;
     }
@@ -174,15 +186,7 @@ void GUIManager::renderMainWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Rating filter
-       // ImGui::Text("Minimum Rating:");
-       // ImGui::SameLine();
-       // ImGui::SetNextItemWidth(windowSize.x / 2 - 150);
-        //ImGui::SliderFloat("##minRatingFilter", &minRatingFilter, 0.0f, 5.0f);
-
-        //ImGui::Spacing();
-        //ImGui::Separator();
-        //ImGui::Spacing();
+      
 
         // Set the color of the button
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
@@ -208,11 +212,7 @@ void GUIManager::renderMainWindow() {
             else if (!search_by_author) {
                 title_search_thread = std::thread(&GUIManager::searchBooksByTitle, this, search_query);
             }
-            // Apply rating filter
-          // if (minRatingFilter > 0.0f) {
-          //     title_search_results = bookManager.filterBooksByRating(minRatingFilter);
-          //     author_search_results = bookManager.filterBooksByRating(minRatingFilter);
-          // }
+         
         }
         // Revert to the previous style
         ImGui::PopStyleColor(3);
@@ -239,9 +239,22 @@ void GUIManager::renderMainWindow() {
     }
 
     ImGui::Spacing();
-    ImGui::Separator();
+    //ImGui::Separator();
     ImGui::Spacing();
 
+     // If no details were found, show a popup
+    if (no_details_found) {
+        ImGui::OpenPopup("No Details Found");
+        no_details_found = false; // Reset the flag
+    }
+
+    if (ImGui::BeginPopupModal("No Details Found", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("No details found for one or more books.");
+        if (ImGui::Button("OK")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
     if (author_search_completed || title_search_completed) {
         displaySearchResults();
     }

@@ -1,4 +1,6 @@
-﻿  GUIManager.cpp
+﻿  BookManager.cpp
+  GUIManager.cpp
+  HTTPClient.cpp
   main.cpp
   Generating Code...
   FINALPRJ.vcxproj -> C:\Users\user\OneDrive\Desktop\Preperatiion for the test\FINALPRJ\x64\Debug\FINALPRJ.exe
