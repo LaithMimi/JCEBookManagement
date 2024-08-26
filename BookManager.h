@@ -1,45 +1,19 @@
-#ifndef BOOK_MANAGER_H
-#define BOOK_MANAGER_H
-
+#pragma once
+#include "Book.h"
+#include "HTTPClient.h"
 #include <vector>
 #include <string>
-#include "Book.h"
-#include "JSONParser.h"
-#include "HTTPClient.h"
-  
 
 class BookManager {
 public:
-    // Adds a new book to the collection
     void addBook(const Book& book);
-
-    // Returns a pointer to a book by its ISBN
     Book* getBook(const std::string& isbn);
-
-    // Returns a reference to the list of all books
     std::vector<Book>& getBooks();
-
-    // Method to load books from an API using HTTPClient
     std::vector<Book> loadBooksFromAPI(const std::string& searchQuery);
-
-    // Method to search books by title
     std::vector<Book> searchBooksByTitle(const std::string& title);
-
-    // Method to search books by author
     std::vector<Book> searchBooksByAuthor(const std::string& author);
- 
-  //  std::vector<Book> filterBooksByGenre(const std::string& genre);
-  //  std::vector<Book> filterBooksByYear(int year);
 
 private:
-    std::map<std::string, Book> selected_books_map;
-    Book* selected_book = nullptr;
-    std::string last_search_query;
-    bool search_by_author;
-
     std::vector<Book> books;
-    JSONParser jsonParser;
-    HTTPClient httpClient;  // Add HTTPClient as a member
+    HTTPClient httpClient;
 };
-
-#endif // BOOK_MANAGER_H

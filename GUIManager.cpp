@@ -46,7 +46,7 @@ void GUIManager::displaySearchResults() {
     cv.wait(lock, [this] { return title_search_completed.load() || author_search_completed.load(); });
 
     ImGui::Text("Searched Books:");
-    ImGui::BeginChild("SearchResults", ImVec2(0, 400), true);
+    ImGui::BeginChild("SearchResults", ImVec2(ImGui::GetContentRegionAvail().x * 0.6f, 400), true);
 
     if (!author_search_results.empty()) {
         ImGui::Text("Author Search Results:");
@@ -72,29 +72,37 @@ void GUIManager::displaySearchResults() {
 
     ImGui::EndChild();
 
-    ImGui::Separator();
+    ImGui::SameLine();
 
-    if (selected_book) {
-        ImGui::Text("Selected Book Details:");
-        ImGui::Text("Title: %s", selected_book->getTitle().c_str());
-        ImGui::Text("Author: %s", selected_book->getAuthor().c_str());
-        ImGui::Text("ISBN: %s", selected_book->getISBN().c_str());
-        ImGui::Text("Publisher: %s", selected_book->getPublisher().c_str());
-        ImGui::Text("Year: %d", selected_book->getYear());
-    }
-
-    ImGui::Separator();
-
+    // Display books history on the right side
+    ImGui::BeginChild("BooksHistory", ImVec2(ImGui::GetContentRegionAvail().x, 400), true);
     ImGui::Text("Books History:");
-    ImGui::BeginChild("BooksHistory", ImVec2(0, 400), true);
     for (const auto& pair : selected_books_map) {
         if (ImGui::Selectable(pair.first.c_str(), false, 0, ImVec2(0, 0))) {
             selected_book = &pair.second;
         }
     }
     ImGui::EndChild();
+
+    ImGui::Separator();
+
+    if (selected_book) {
+        ImGui::Text("Selected Book Details:");
+        displayBookDetails(*selected_book);
+    }
+
+    ImGui::Separator();
 }
 
+void GUIManager::displayBookDetails(const Book& book) {
+    ImGui::Text("Title: %s", book.getTitle().c_str());
+    ImGui::Text("Author: %s", book.getAuthor().c_str());
+    ImGui::Text("ISBN: %s", book.getISBN().c_str());
+    ImGui::Text("Publisher: %s", book.getPublisher().c_str());
+    ImGui::Text("Year: %d", book.getYear());
+  
+   
+}
 void GUIManager::renderMainWindow() {
     // Get the current size of the application's main window
     ImVec2 windowSize = ImGui::GetIO().DisplaySize;
@@ -111,7 +119,7 @@ void GUIManager::renderMainWindow() {
     static float minRatingFilter = 0.0f;
 
     if (!title_search_in_progress && !author_search_in_progress) {
-       
+
         ImGui::Text("Search for Books");
         ImGui::Separator();
         ImGui::Spacing();
@@ -200,15 +208,16 @@ void GUIManager::renderMainWindow() {
             else if (!search_by_author) {
                 title_search_thread = std::thread(&GUIManager::searchBooksByTitle, this, search_query);
             }
-             // Apply rating filter
-           // if (minRatingFilter > 0.0f) {
-           //     title_search_results = bookManager.filterBooksByRating(minRatingFilter);
-           //     author_search_results = bookManager.filterBooksByRating(minRatingFilter);
-           // }
+            // Apply rating filter
+          // if (minRatingFilter > 0.0f) {
+          //     title_search_results = bookManager.filterBooksByRating(minRatingFilter);
+          //     author_search_results = bookManager.filterBooksByRating(minRatingFilter);
+          // }
         }
         // Revert to the previous style
         ImGui::PopStyleColor(3);
-    } else {
+    }
+    else {
         const char* text = "Searching... Please wait.";
 
         // Calculate the size of the text

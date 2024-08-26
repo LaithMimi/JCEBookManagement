@@ -17,7 +17,6 @@ public:
 
 private:
     BookManager& bookManager;
-
     // Store search results
     std::vector<Book> title_search_results;
     std::vector<Book> author_search_results;
@@ -43,6 +42,7 @@ private:
     // Functions to handle the search operations in threads
     void searchBooksByTitle(const std::string& title);
     void searchBooksByAuthor(const std::string& author);
+    void displayBookDetails(const Book& book);
 
     // Function to display search results and book details
     void displaySearchResults();
