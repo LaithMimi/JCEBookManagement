@@ -19,7 +19,6 @@ private:
     BookManager& bookManager;
     bool no_details_found = false;  // Flag to indicate if no details were found
     const Book* selected_book = nullptr;  // Pointer to the currently selected book
-    std::vector<std::string> recentSearches;
 
     // Store search results
     std::vector<Book> title_search_results;
@@ -48,5 +47,3 @@ private:
     // Function to display search results and book details
     void displaySearchResults();
 };
-
-

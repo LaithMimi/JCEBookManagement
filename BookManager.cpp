@@ -20,34 +20,19 @@ std::vector<Book>& BookManager::getBooks() {
 }
 
 std::vector<Book> BookManager::loadBooksFromAPI(const std::string& searchQuery) {
-    books = httpClient.searchBook(searchQuery);
+    books = httpClient.searchBooksByTitle(searchQuery);
     return books;
 }
 
 std::vector<Book> BookManager::searchBooksByTitle(const std::string& title) {
-    std::vector<Book> result;
-    for (const auto& book : books) {
-        if (book.getTitle().find(title) != std::string::npos) {
-            result.push_back(book);
-        }
-    }
-    return result;
+    books = httpClient.searchBooksByTitle(title);
+    return books;
 }
 
 std::vector<Book> BookManager::searchBooksByAuthor(const std::string& author) {
-    std::vector<Book> result;
-    if (books.empty()) {
-        std::cout << "No books available to search." << std::endl;
-        return result;
-    }
-    for (const auto& book : books) {
-        if (book.getAuthor().find(author) != std::string::npos) {
-            result.push_back(book);
-        }
-    }
-    return result;
+    books = httpClient.searchBookByAuthor(author);
+    return books;
 }
-
 
 void BookManager::sortBooksByTitle() {
     std::sort(books.begin(), books.end(), [](const Book& a, const Book& b) {
@@ -66,7 +51,6 @@ void BookManager::sortBooksByYear() {
         return a.getYear() < b.getYear();
         });
 }
-
 
 void BookManager::markAsFavorite(const std::string& isbn) {
     auto it = std::find(favoriteBooks.begin(), favoriteBooks.end(), isbn);

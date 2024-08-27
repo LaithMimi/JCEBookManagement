@@ -15,7 +15,7 @@ public:
     void sortBooksByTitle();
     void sortBooksByAuthor();
     void sortBooksByYear();
-    
+
     void markAsFavorite(const std::string& isbn);
     std::vector<Book> getFavoriteBooks() const;
 
@@ -23,5 +23,4 @@ private:
     std::vector<Book> books;
     HTTPClient httpClient;
     std::vector<std::string> favoriteBooks; // Store ISBNs of favorite books
-
 };

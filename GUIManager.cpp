@@ -7,14 +7,14 @@ GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {   
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.2f, 1.0f);        // Dark blue background
     style.Colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.15f, 0.25f, 1.0f);      // Slightly lighter blue background for child windows
     style.Colors[ImGuiCol_FrameBg] = ImVec4(0.9f, 0.7f, 0.7f, 1.0f);         // Darker frame background
-    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.9f, 0.9f, 0.6f, 1.0f);  // Hovered frame background
-    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.5f, 1.0f);   // Active frame background
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);  // Hovered frame background
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);   // Active frame background
     style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.5f, 0.2f, 1.0f);          // Green buttons
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.6f, 0.3f, 1.0f);   // Hovered green buttons
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.4f, 0.1f, 1.0f);    // Active green buttons
     style.Colors[ImGuiCol_Separator] = ImVec4(0.75f, 0.2f, 0.2f, 1.0f);      // Red separators
     style.Colors[ImGuiCol_PopupBg] = ImVec4(0.2f, 0.2f, 0.3f, 0.9f);         // Popup background with slight transparency
-    style.Colors[ImGuiCol_Header] = ImVec4(0.3f, 0.3f, 0.5f, 1.0f);          // Header background
+    style.Colors[ImGuiCol_Header] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);          // Header background
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.4f, 0.4f, 0.6f, 1.0f);   // Hovered header background
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.2f, 0.2f, 0.4f, 1.0f);    // Active header background
 }
@@ -35,13 +35,7 @@ void GUIManager::searchBooksByTitle(const std::string& title) {
         title_search_completed = false;
 
         title_search_results.clear();
-        title_search_results = bookManager.loadBooksFromAPI(title);
-
-        // Add the search query to the history
-        recentSearches.push_back(title);
-        if (recentSearches.size() > 5) { // Keep only the last 5 searches
-            recentSearches.erase(recentSearches.begin());
-        }
+        title_search_results = bookManager.searchBooksByTitle(title);
 
         title_search_in_progress = false;
         title_search_completed = true;
@@ -57,7 +51,7 @@ void GUIManager::searchBooksByAuthor(const std::string& author) {
         author_search_results.clear();
 
         // Call the function to load books from the API based on the author's name
-        author_search_results = bookManager.loadBooksFromAPI(author);
+        author_search_results = bookManager.searchBooksByAuthor(author);
 
         author_search_in_progress = false;
         author_search_completed = true;
@@ -102,21 +96,22 @@ void GUIManager::displaySearchResults() {
     ImGui::BeginChild("BooksHistory", ImVec2(ImGui::GetContentRegionAvail().x, 400), true);
     ImGui::Text("Books History:");
 
-    // Iterate through the selected_books_map and allow deletion
-    for (auto it = selected_books_map.begin(); it != selected_books_map.end();) {
-        ImGui::Text("%s", it->first.c_str());
-        ImGui::SameLine();
-        if (ImGui::Button(("Delete##" + it->first).c_str())) {
-            if (selected_book == &it->second) {
-                selected_book = nullptr; // Clear selected_book if it was the one being deleted
-            }
-            it = selected_books_map.erase(it); // Erase the book from the history
-        }
-        else {
-            ++it; // Only increment if not erased
+    // Iterate through the selected_books_map and display the books in the history
+    for (auto& pair : selected_books_map) {
+        if (ImGui::Selectable(pair.first.c_str(), selected_book == &pair.second, 0, ImVec2(0, 0))) {
+            selected_book = &pair.second; // Set the selected book to the one clicked in the history
         }
     }
     ImGui::EndChild();
+
+    // Add a button to delete the selected book from history
+    ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 210); // Adjust value for proper alignment
+    if (selected_book) {
+        if (ImGui::Button("Delete", ImVec2(200, 0))) {
+            selected_books_map.erase(selected_book->getTitle()); // Remove the selected book from the map
+            selected_book = nullptr; // Clear the currently selected book
+        }
+    }
 
     // Add a button to clear all books from history
     ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 210); // Adjust value for proper alignment
@@ -132,7 +127,6 @@ void GUIManager::displaySearchResults() {
         displayBookDetails(*selected_book);
     }
 
-    ImGui::Separator();
 }
 void GUIManager::displayBookDetails(const Book& book) {
     ImGui::Text("Title: %s", book.getTitle().c_str());
@@ -162,9 +156,10 @@ void GUIManager::renderMainWindow() {
     if (!title_search_in_progress && !author_search_in_progress) {
 
         ImGui::Text("Search for Books");
+        ImGui::SameLine();
         // Refresh Button
-        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 160); // Adjust value for proper alignment
-        if (ImGui::Button("Refresh", ImVec2(140, 0))) {
+        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x);  
+        if (ImGui::Button("Refresh", ImVec2(160, 0))) {
             // Reset states when Refresh is clicked
             search_query[0] = '\0';   // Clear search query
             author_query[0] = '\0';   // Clear author query

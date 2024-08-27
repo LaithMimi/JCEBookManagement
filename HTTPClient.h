@@ -1,4 +1,3 @@
-// HTTPClient.h
 #pragma once
 #include <string>
 #include <vector>
@@ -8,11 +7,11 @@
 
 class HTTPClient {
 public:
-    std::vector<Book> searchBook(const std::string& bookName);
-    std::vector<Book> searchBooksByAuthor(const std::string& author);
+    std::vector<Book> searchBooksByTitle(const std::string& title);  // Search by book title
+    std::vector<Book> searchBookByAuthor(const std::string& authorName);  // Search by author name
 
 private:
-    std::string fetchBookData(const std::string& bookName);
+    std::string fetchBookData(const std::string& query);
     std::vector<Book> parseBookData(const std::string& jsonData);
     std::mutex mtx;
     JSONParser jsonParser;
