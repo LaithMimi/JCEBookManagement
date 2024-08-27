@@ -1,6 +1,23 @@
 #include "GUIManager.h"
 
-GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {}
+GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {    // Set up the color scheme for ImGui
+    ImGui::StyleColorsDark(); // Start with a dark theme
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.2f, 1.0f);        // Dark blue background
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.15f, 0.25f, 1.0f);      // Slightly lighter blue background for child windows
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.9f, 0.7f, 0.7f, 1.0f);         // Darker frame background
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.9f, 0.9f, 0.6f, 1.0f);  // Hovered frame background
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.5f, 1.0f);   // Active frame background
+    style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.5f, 0.2f, 1.0f);          // Green buttons
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.6f, 0.3f, 1.0f);   // Hovered green buttons
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.4f, 0.1f, 1.0f);    // Active green buttons
+    style.Colors[ImGuiCol_Separator] = ImVec4(0.75f, 0.2f, 0.2f, 1.0f);      // Red separators
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.2f, 0.2f, 0.3f, 0.9f);         // Popup background with slight transparency
+    style.Colors[ImGuiCol_Header] = ImVec4(0.3f, 0.3f, 0.5f, 1.0f);          // Header background
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.4f, 0.4f, 0.6f, 1.0f);   // Hovered header background
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.2f, 0.2f, 0.4f, 1.0f);    // Active header background
+}
 
 GUIManager::~GUIManager() {
     if (title_search_thread.joinable()) {
@@ -19,19 +36,18 @@ void GUIManager::searchBooksByTitle(const std::string& title) {
 
         title_search_results.clear();
         title_search_results = bookManager.loadBooksFromAPI(title);
-        // Check for books with no details
-        for (auto& book : title_search_results) {
-            if (book.getTitle().empty() || book.getAuthor().empty() ||
-                book.getISBN().empty() || book.getPublisher().empty()) {
-                no_details_found = true; // Set a flag to indicate missing details
-            }
+
+        // Add the search query to the history
+        recentSearches.push_back(title);
+        if (recentSearches.size() > 5) { // Keep only the last 5 searches
+            recentSearches.erase(recentSearches.begin());
         }
+
         title_search_in_progress = false;
         title_search_completed = true;
     }
     cv.notify_one();  // Notify that the title search is complete
 }
-
 void GUIManager::searchBooksByAuthor(const std::string& author) {
     {
         std::lock_guard<std::mutex> lock(mtx);
@@ -39,14 +55,10 @@ void GUIManager::searchBooksByAuthor(const std::string& author) {
         author_search_completed = false;
 
         author_search_results.clear();
-        author_search_results = bookManager.searchBooksByAuthor(author);
-        // Check for books with no details
-        for (auto& book : author_search_results) {
-            if (book.getTitle().empty() || book.getAuthor().empty() ||
-                book.getISBN().empty() || book.getPublisher().empty()) {
-                no_details_found = true; // Set a flag to indicate missing details
-            }
-        }
+
+        // Call the function to load books from the API based on the author's name
+        author_search_results = bookManager.loadBooksFromAPI(author);
+
         author_search_in_progress = false;
         author_search_completed = true;
     }
@@ -58,10 +70,11 @@ void GUIManager::displaySearchResults() {
     cv.wait(lock, [this] { return title_search_completed.load() || author_search_completed.load(); });
 
     ImGui::Text("Searched Books:");
-    ImGui::BeginChild("SearchResults", ImVec2(ImGui::GetContentRegionAvail().x * 0.6f, 400), true);
+
+    // Create the Searched Books child window on the left
+    ImGui::BeginChild("SearchResults", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 400), true);
 
     if (!author_search_results.empty()) {
-        ImGui::Text("Author Search Results:");
         for (const auto& book : author_search_results) {
             if (ImGui::Selectable(book.getTitle().c_str(), false, 0, ImVec2(0, 0))) {
                 auto result = selected_books_map.emplace(book.getTitle(), book);
@@ -70,7 +83,6 @@ void GUIManager::displaySearchResults() {
         }
     }
     else if (!title_search_results.empty()) {
-        ImGui::Text("Title Search Results:");
         for (const auto& book : title_search_results) {
             if (ImGui::Selectable(book.getTitle().c_str(), false, 0, ImVec2(0, 0))) {
                 auto result = selected_books_map.emplace(book.getTitle(), book);
@@ -84,17 +96,34 @@ void GUIManager::displaySearchResults() {
 
     ImGui::EndChild();
 
-    ImGui::SameLine();
+    ImGui::SameLine();  // Position the "Books History" section to the right of "SearchResults"
 
-    // Display books history on the right side
+    // Create the Books History child window on the right
     ImGui::BeginChild("BooksHistory", ImVec2(ImGui::GetContentRegionAvail().x, 400), true);
     ImGui::Text("Books History:");
-    for (const auto& pair : selected_books_map) {
-        if (ImGui::Selectable(pair.first.c_str(), false, 0, ImVec2(0, 0))) {
-            selected_book = &pair.second;
+
+    // Iterate through the selected_books_map and allow deletion
+    for (auto it = selected_books_map.begin(); it != selected_books_map.end();) {
+        ImGui::Text("%s", it->first.c_str());
+        ImGui::SameLine();
+        if (ImGui::Button(("Delete##" + it->first).c_str())) {
+            if (selected_book == &it->second) {
+                selected_book = nullptr; // Clear selected_book if it was the one being deleted
+            }
+            it = selected_books_map.erase(it); // Erase the book from the history
+        }
+        else {
+            ++it; // Only increment if not erased
         }
     }
     ImGui::EndChild();
+
+    // Add a button to clear all books from history
+    ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 210); // Adjust value for proper alignment
+    if (ImGui::Button("Clear All History", ImVec2(200, 0))) { // Adjust the width of the button
+        selected_books_map.clear(); // Clear the entire history
+        selected_book = nullptr;    // Clear the currently selected book
+    }
 
     ImGui::Separator();
 
@@ -105,16 +134,16 @@ void GUIManager::displaySearchResults() {
 
     ImGui::Separator();
 }
-
 void GUIManager::displayBookDetails(const Book& book) {
     ImGui::Text("Title: %s", book.getTitle().c_str());
     ImGui::Text("Author: %s", book.getAuthor().c_str());
     ImGui::Text("ISBN: %s", book.getISBN().c_str());
     ImGui::Text("Publisher: %s", book.getPublisher().c_str());
     ImGui::Text("Year: %d", book.getYear());
-  
-   
+
+
 }
+
 void GUIManager::renderMainWindow() {
     // Get the current size of the application's main window
     ImVec2 windowSize = ImGui::GetIO().DisplaySize;
@@ -133,6 +162,16 @@ void GUIManager::renderMainWindow() {
     if (!title_search_in_progress && !author_search_in_progress) {
 
         ImGui::Text("Search for Books");
+        // Refresh Button
+        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 160); // Adjust value for proper alignment
+        if (ImGui::Button("Refresh", ImVec2(140, 0))) {
+            // Reset states when Refresh is clicked
+            search_query[0] = '\0';   // Clear search query
+            author_query[0] = '\0';   // Clear author query
+            title_search_results.clear();  // Clear search results by title
+            author_search_results.clear(); // Clear search results by author
+            selected_book = nullptr;  // Deselect any selected book
+        }
         ImGui::Separator();
         ImGui::Spacing();
 
@@ -157,7 +196,47 @@ void GUIManager::renderMainWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Checkbox("Search by Author", &search_by_author)) {
+        // Sorting Buttons
+        if (ImGui::Button("Sort by Title")) {
+            if (search_by_author) {
+                std::sort(author_search_results.begin(), author_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getTitle() < b.getTitle();
+                    });
+            }
+            else {
+                std::sort(title_search_results.begin(), title_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getTitle() < b.getTitle();
+                    });
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Sort by Author")) {
+            if (search_by_author) {
+                std::sort(author_search_results.begin(), author_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getAuthor() < b.getAuthor();
+                    });
+            }
+            else {
+                std::sort(title_search_results.begin(), title_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getAuthor() < b.getAuthor();
+                    });
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Sort by Year")) {
+            if (search_by_author) {
+                std::sort(author_search_results.begin(), author_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getYear() < b.getYear();
+                    });
+            }
+            else {
+                std::sort(title_search_results.begin(), title_search_results.end(), [](const Book& a, const Book& b) {
+                    return a.getYear() < b.getYear();
+                    });
+            }
+        }
+
+        if (ImGui::Checkbox("Search by Author Name", &search_by_author)) {
             if (!search_by_author) {
                 memset(author_query, 0, sizeof(author_query));
             }
@@ -186,7 +265,6 @@ void GUIManager::renderMainWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
-      
 
         // Set the color of the button
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
@@ -212,10 +290,15 @@ void GUIManager::renderMainWindow() {
             else if (!search_by_author) {
                 title_search_thread = std::thread(&GUIManager::searchBooksByTitle, this, search_query);
             }
-         
+
         }
         // Revert to the previous style
         ImGui::PopStyleColor(3);
+
+        // Display the total count of books currently shown in the list
+        int displayedBookCount = search_by_author ? author_search_results.size() : title_search_results.size();
+        ImGui::Text("Total Books Found: %d", displayedBookCount);
+
     }
     else {
         const char* text = "Searching... Please wait.";
@@ -238,11 +321,12 @@ void GUIManager::renderMainWindow() {
 
     }
 
+
     ImGui::Spacing();
     //ImGui::Separator();
     ImGui::Spacing();
 
-     // If no details were found, show a popup
+    // If no details were found, show a popup
     if (no_details_found) {
         ImGui::OpenPopup("No Details Found");
         no_details_found = false; // Reset the flag
@@ -255,6 +339,8 @@ void GUIManager::renderMainWindow() {
         }
         ImGui::EndPopup();
     }
+
+
     if (author_search_completed || title_search_completed) {
         displaySearchResults();
     }

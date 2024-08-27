@@ -1,6 +1,4 @@
-#ifndef GUI_MANAGER_H
-#define GUI_MANAGER_H
-
+#pragma once
 #include "imgui.h"
 #include "BookManager.h"
 #include <thread>
@@ -21,6 +19,7 @@ private:
     BookManager& bookManager;
     bool no_details_found = false;  // Flag to indicate if no details were found
     const Book* selected_book = nullptr;  // Pointer to the currently selected book
+    std::vector<std::string> recentSearches;
 
     // Store search results
     std::vector<Book> title_search_results;
@@ -50,4 +49,4 @@ private:
     void displaySearchResults();
 };
 
-#endif // GUI_MANAGER_H
+

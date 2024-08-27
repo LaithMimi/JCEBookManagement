@@ -47,3 +47,42 @@ std::vector<Book> BookManager::searchBooksByAuthor(const std::string& author) {
     }
     return result;
 }
+
+
+void BookManager::sortBooksByTitle() {
+    std::sort(books.begin(), books.end(), [](const Book& a, const Book& b) {
+        return a.getTitle() < b.getTitle();
+        });
+}
+
+void BookManager::sortBooksByAuthor() {
+    std::sort(books.begin(), books.end(), [](const Book& a, const Book& b) {
+        return a.getAuthor() < b.getAuthor();
+        });
+}
+
+void BookManager::sortBooksByYear() {
+    std::sort(books.begin(), books.end(), [](const Book& a, const Book& b) {
+        return a.getYear() < b.getYear();
+        });
+}
+
+
+void BookManager::markAsFavorite(const std::string& isbn) {
+    auto it = std::find(favoriteBooks.begin(), favoriteBooks.end(), isbn);
+    if (it == favoriteBooks.end()) {
+        favoriteBooks.push_back(isbn);
+    }
+}
+
+std::vector<Book> BookManager::getFavoriteBooks() const {
+    std::vector<Book> favorites;
+    for (const auto& isbn : favoriteBooks) {
+        for (const auto& book : books) {
+            if (book.getISBN() == isbn) {
+                favorites.push_back(book);
+            }
+        }
+    }
+    return favorites;
+}

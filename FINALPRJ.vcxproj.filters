@@ -308,5 +308,6 @@
   <ItemGroup>
     <Font Include="include\ImGui\misc\fonts\Karla-Regular.ttf" />
     <Font Include="include\ImGui\misc\fonts\Roboto-Medium.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Bold.ttf" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@
 class HTTPClient {
 public:
     std::vector<Book> searchBook(const std::string& bookName);
+    std::vector<Book> searchBooksByAuthor(const std::string& author);
 
 private:
     std::string fetchBookData(const std::string& bookName);
