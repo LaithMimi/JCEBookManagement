@@ -13,6 +13,5 @@ public:
 private:
     std::string fetchBookData(const std::string& query);
     std::vector<Book> parseBookData(const std::string& jsonData);
-    std::mutex mtx;
     JSONParser jsonParser;
 };

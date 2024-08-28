@@ -1,5 +1,5 @@
 ﻿  GUIManager.cpp
-C:\Users\user\OneDrive\Desktop\Preperatiion for the test\FINALPRJ\FINALPRJ\GUIManager.cpp(294,32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\OneDrive\Desktop\Preperatiion for the test\FINALPRJ\FINALPRJ\GUIManager.cpp(308,32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   FINALPRJ.vcxproj -> C:\Users\user\OneDrive\Desktop\Preperatiion for the test\FINALPRJ\x64\Debug\FINALPRJ.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

@@ -19,7 +19,7 @@ GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {   
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.2f, 0.2f, 0.4f, 1.0f);    // Active header background
 }
 
-GUIManager::~GUIManager() {
+GUIManager::~GUIManager() { //ensures that any threads started have completed their execution before the object is destroyed. 
     if (title_search_thread.joinable()) {
         title_search_thread.join();
     }
@@ -34,7 +34,9 @@ void GUIManager::searchBooksByTitle(const std::string& title) {
         title_search_in_progress = true;
         title_search_completed = false;
 
-        title_search_results.clear();
+        title_search_results.clear();//removes all the old entries
+
+        // Call the function to load books from the API based on the title
         title_search_results = bookManager.searchBooksByTitle(title);
 
         title_search_in_progress = false;
@@ -59,20 +61,41 @@ void GUIManager::searchBooksByAuthor(const std::string& author) {
     cv.notify_one();  // Notify that the author search is complete
 }
 
+void GUIManager::displayBookDetails(const Book& book) {
+    ImGui::SetWindowFontScale(1.25f);
+    ImGui::Text("Title: %s", book.getTitle().c_str());
+    ImGui::Text("Author: %s", book.getAuthor().c_str());
+    ImGui::Text("ISBN: %s", book.getISBN().c_str());
+    ImGui::Text("Publisher: %s", book.getPublisher().c_str());
+    ImGui::Text("Year: %d", book.getYear());
+    ImGui::SetWindowFontScale(1.0f);
+}
+
 void GUIManager::displaySearchResults() {
-    std::unique_lock<std::mutex> lock(mtx);
+    std::unique_lock<std::mutex> lock(mtx);    // Lock the mutex to ensure thread-safe access to shared data.
+
     cv.wait(lock, [this] { return title_search_completed.load() || author_search_completed.load(); });
 
     ImGui::Text("Searched Books:");
+    
+    ImGui::SameLine();//Move to the same line to position the next child window beside the previous one
+    const char* historyText = "Books History:";
+    float historyTextWidth = ImGui::CalcTextSize(historyText).x;
+    ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x*0.5f + historyTextWidth);
+    ImGui::Text("%s", historyText);
 
-    // Create the Searched Books child window on the left
+
+    //Begin a child window named "SearchResults" on the left side, occupying half the available width and 400 pixels in height.
     ImGui::BeginChild("SearchResults", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 400), true);
 
-    if (!author_search_results.empty()) {
+    if (!author_search_results.empty()) {// Check if there are any results from the author search
         for (const auto& book : author_search_results) {
             if (ImGui::Selectable(book.getTitle().c_str(), false, 0, ImVec2(0, 0))) {
-                auto result = selected_books_map.emplace(book.getTitle(), book);
-                selected_book = &result.first->second;
+                // Display each book title as a selectable item in the GUI
+                // If a book title is clicked, the following block executes
+
+                auto result = selected_books_map.emplace(book.getTitle(), book); // Add the selected book to the selected_books_map
+                selected_book = &result.first->second; // Set "the selected_book" pointer to the newly selected book.
             }
         }
     }
@@ -87,15 +110,12 @@ void GUIManager::displaySearchResults() {
     else {
         ImGui::Text("No results found.");
     }
+    ImGui::EndChild(); //End the "SearchResults" child window
 
-    ImGui::EndChild();
-
-    ImGui::SameLine();  // Position the "Books History" section to the right of "SearchResults"
-
+    ImGui::SameLine();//Move to the same line to position the next child window beside the previous one
+    
     // Create the Books History child window on the right
     ImGui::BeginChild("BooksHistory", ImVec2(ImGui::GetContentRegionAvail().x, 400), true);
-    ImGui::Text("Books History:");
-
     // Iterate through the selected_books_map and display the books in the history
     for (auto& pair : selected_books_map) {
         if (ImGui::Selectable(pair.first.c_str(), selected_book == &pair.second, 0, ImVec2(0, 0))) {
@@ -108,12 +128,15 @@ void GUIManager::displaySearchResults() {
     ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 210); // Adjust value for proper alignment
     if (selected_book) {
         if (ImGui::Button("Delete", ImVec2(200, 0))) {
+            //Create a "Delete" button with a width of 200 pixels.
+            //If the button is clicked, the following block executes.
+
             selected_books_map.erase(selected_book->getTitle()); // Remove the selected book from the map
-            selected_book = nullptr; // Clear the currently selected book
+            selected_book = nullptr; // Clear the currently selected book (the ptr)
         }
     }
 
-    // Add a button to clear all books from history
+    //Add a button to clear all books from history
     ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - 210); // Adjust value for proper alignment
     if (ImGui::Button("Clear All History", ImVec2(200, 0))) { // Adjust the width of the button
         selected_books_map.clear(); // Clear the entire history
@@ -121,20 +144,12 @@ void GUIManager::displaySearchResults() {
     }
 
     ImGui::Separator();
-
     if (selected_book) {
+        ImGui::SetWindowFontScale(1.35f);
         ImGui::Text("Selected Book Details:");
+        ImGui::SetWindowFontScale(1.0f);
         displayBookDetails(*selected_book);
     }
-
-}
-void GUIManager::displayBookDetails(const Book& book) {
-    ImGui::Text("Title: %s", book.getTitle().c_str());
-    ImGui::Text("Author: %s", book.getAuthor().c_str());
-    ImGui::Text("ISBN: %s", book.getISBN().c_str());
-    ImGui::Text("Publisher: %s", book.getPublisher().c_str());
-    ImGui::Text("Year: %d", book.getYear());
-
 
 }
 
@@ -151,10 +166,9 @@ void GUIManager::renderMainWindow() {
     static char search_query[128] = "";
     static char author_query[128] = "";
     static bool search_by_author = false;
-    static float minRatingFilter = 0.0f;
 
-    if (!title_search_in_progress && !author_search_in_progress) {
-
+   
+    if (!title_search_in_progress && !author_search_in_progress) {//Check if no search is currently in progress
         ImGui::Text("Search for Books");
         ImGui::SameLine();
         // Refresh Button
@@ -260,7 +274,6 @@ void GUIManager::renderMainWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
-
         // Set the color of the button
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
@@ -268,17 +281,18 @@ void GUIManager::renderMainWindow() {
 
         // Center the submit button
         ImGui::SetCursorPosX((windowSize.x - 120) / 2);
-        if (ImGui::Button("Submit", ImVec2(120, 0))) {
+        if (ImGui::Button("Submit", ImVec2(120, 0))) {//If there are active threads, join them before starting new searches
             if (title_search_thread.joinable()) {
                 title_search_thread.join();
             }
             if (author_search_thread.joinable()) {
                 author_search_thread.join();
             }
-
+            //Reset the completion flags
             title_search_completed = false;
             author_search_completed = false;
 
+            // Start the search threads based on the query and search mode
             if (search_by_author && strlen(author_query) > 0) {
                 author_search_thread = std::thread(&GUIManager::searchBooksByAuthor, this, author_query);
             }
@@ -305,21 +319,20 @@ void GUIManager::renderMainWindow() {
         ImVec2 windowSize = ImGui::GetWindowSize();
 
         // Calculate the centered position
-        float textPosX = (windowSize.x - textSize.x) / 2.0f;
+        float textPosX = (windowSize.x - textSize.x) / 2.2f;
         float textPosY = (windowSize.y - textSize.y) / 2.0f;
 
         // Set the cursor position to the calculated centered position
         ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
-
-        // Draw the text
+        
+        ImGui::SetWindowFontScale(1.5f); 
         ImGui::Text("%s", text);
-
+        ImGui::SetWindowFontScale(1.0f);
     }
 
 
     ImGui::Spacing();
-    //ImGui::Separator();
-    ImGui::Spacing();
+   // ImGui::Spacing();
 
     // If no details were found, show a popup
     if (no_details_found) {

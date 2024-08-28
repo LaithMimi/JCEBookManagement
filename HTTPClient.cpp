@@ -5,7 +5,7 @@
 
 std::string HTTPClient::fetchBookData(const std::string& query) {
     httplib::Client cli("openlibrary.org");
-    auto res = cli.Get(query.c_str());
+    auto res = cli.Get(query.c_str()); 
     if (res && res->status == 200) {
         return res->body;
     }
@@ -26,11 +26,7 @@ std::vector<Book> HTTPClient::parseBookData(const std::string& jsonData) {
                 (book.contains("author_name") && !book["author_name"].empty()) ? book["author_name"][0] : "",
                 (book.contains("isbn") && !book["isbn"].empty()) ? book["isbn"][0] : "",
                 (book.contains("publisher") && !book["publisher"].empty()) ? book["publisher"][0] : "",
-                book.value("first_publish_year", 0),
-                book.contains("cover_i") ? "https://covers.openlibrary.org/b/id/" + std::to_string(book["cover_i"].get<int>()) + "-M.jpg" : "",
-                std::vector<std::string>(),
-                std::vector<std::string>(),
-                ""
+                book.value("first_publish_year", 0)
             );
             books.push_back(bookObj);
         }
