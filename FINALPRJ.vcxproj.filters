@@ -246,6 +246,9 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GL\glew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\ImGui\imgui.cpp">
@@ -309,5 +312,22 @@
     <Font Include="include\ImGui\misc\fonts\Karla-Regular.ttf" />
     <Font Include="include\ImGui\misc\fonts\Roboto-Medium.ttf" />
     <Font Include="include\ImGui\misc\fonts\OpenSans-Bold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-BoldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-ExtraBold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-ExtraBoldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Italic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Light.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-LightItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Regular.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Semibold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-SemiboldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\ProggyClean.ttf" />
+    <Font Include="include\ImGui\misc\fonts\ProggyTiny.ttf" />
+    <Font Include="include\ImGui\misc\fonts\Cousine-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="loading.gif">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -1,4 +1,27 @@
 #include "GUIManager.h"
+/*Tried to add loading gif
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
+GLuint LoadTextureFromFile(const char* filename) {
+    int width, height, channels;
+    unsigned char* data = stbi_load(filename, &width, &height, &channels, 0);
+    if (!data) {
+        std::cerr << "Failed to load image: " << filename << std::endl;
+        return 0;
+    }
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data); // Free the image memory
+    return texture;
+}*/
 
 GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {    // Set up the color scheme for ImGui
     ImGui::StyleColorsDark(); // Start with a dark theme
@@ -6,9 +29,12 @@ GUIManager::GUIManager(BookManager& bookManager) : bookManager(bookManager) {   
 
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.2f, 1.0f);        // Dark blue background
     style.Colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.15f, 0.25f, 1.0f);      // Slightly lighter blue background for child windows
-    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.9f, 0.7f, 0.7f, 1.0f);         // Darker frame background
+    
+    /*Boxes Background*/
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);         // Darker frame background
     style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);  // Hovered frame background
     style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);   // Active frame background
+
     style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.5f, 0.2f, 1.0f);          // Green buttons
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.6f, 0.3f, 1.0f);   // Hovered green buttons
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.4f, 0.1f, 1.0f);    // Active green buttons
@@ -152,7 +178,6 @@ void GUIManager::displaySearchResults() {
     }
 
 }
-
 void GUIManager::renderMainWindow() {
     // Get the current size of the application's main window
     ImVec2 windowSize = ImGui::GetIO().DisplaySize;
@@ -167,12 +192,11 @@ void GUIManager::renderMainWindow() {
     static char author_query[128] = "";
     static bool search_by_author = false;
 
-   
-    if (!title_search_in_progress && !author_search_in_progress) {//Check if no search is currently in progress
+    if (!title_search_in_progress && !author_search_in_progress) { // Check if no search is currently in progress
         ImGui::Text("Search for Books");
         ImGui::SameLine();
         // Refresh Button
-        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x);  
+        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x);
         if (ImGui::Button("Refresh", ImVec2(160, 0))) {
             // Reset states when Refresh is clicked
             search_query[0] = '\0';   // Clear search query
@@ -181,25 +205,16 @@ void GUIManager::renderMainWindow() {
             author_search_results.clear(); // Clear search results by author
             selected_book = nullptr;  // Deselect any selected book
         }
-        ImGui::Separator();
         ImGui::Spacing();
-
-        // Set the color of the text box
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         // Adjust width of input fields based on window size
         ImGui::Text("Title:");
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text in input box
         ImGui::SetNextItemWidth(windowSize.x - 150); // Adjust width to fit the window
         ImGui::InputText("##search_query", search_query, IM_ARRAYSIZE(search_query));
-        ImGui::PopStyleColor(); // Revert to previous color
-
-        // Revert to the previous style
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(); // Revert to default text color
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -252,43 +267,29 @@ void GUIManager::renderMainWindow() {
         }
 
         if (search_by_author) {
-            // Set the color of the text box
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-
             ImGui::Text("Author:");
             ImGui::SameLine();
-
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text
             ImGui::SetNextItemWidth(windowSize.x - 150); // Adjust width to fit the window
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black color for text in input box
             ImGui::InputText("##author_query", author_query, IM_ARRAYSIZE(author_query));
-            ImGui::PopStyleColor(); // Revert to previous color
+            ImGui::PopStyleColor(); // Revert to default text color
 
-            // Revert to the previous style
-            ImGui::PopStyleColor(3);
         }
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Set the color of the button
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.1f, 1.0f));
-
         // Center the submit button
         ImGui::SetCursorPosX((windowSize.x - 120) / 2);
-        if (ImGui::Button("Submit", ImVec2(120, 0))) {//If there are active threads, join them before starting new searches
+        if (ImGui::Button("Submit", ImVec2(120, 0))) { // If there are active threads, join them before starting new searches
             if (title_search_thread.joinable()) {
                 title_search_thread.join();
             }
             if (author_search_thread.joinable()) {
                 author_search_thread.join();
             }
-            //Reset the completion flags
+            // Reset the completion flags
             title_search_completed = false;
             author_search_completed = false;
 
@@ -299,10 +300,7 @@ void GUIManager::renderMainWindow() {
             else if (!search_by_author) {
                 title_search_thread = std::thread(&GUIManager::searchBooksByTitle, this, search_query);
             }
-
         }
-        // Revert to the previous style
-        ImGui::PopStyleColor(3);
 
         // Display the total count of books currently shown in the list
         int displayedBookCount = search_by_author ? author_search_results.size() : title_search_results.size();
@@ -318,36 +316,32 @@ void GUIManager::renderMainWindow() {
         // Get the window's size
         ImVec2 windowSize = ImGui::GetWindowSize();
 
-        // Calculate the centered position
+        // Calculate the centered position for the text and image
         float textPosX = (windowSize.x - textSize.x) / 2.2f;
         float textPosY = (windowSize.y - textSize.y) / 2.0f;
+        /*
+        // Calculate the centered position for the image
+        float imagePosX = (windowSize.x - 64) / 2.2f;  // Assuming the image is 64x64 pixels
+        float imagePosY = textPosY - 70; // Position the image above the text
 
-        // Set the cursor position to the calculated centered position
-        ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
+       
+       // Render the loading image
+        ImGui::SetCursorPos(ImVec2(imagePosX, imagePosY));
+        if (loadingTexture) {
+            // Safe to use loadingTexture
+            ImGui::Image((void*)(intptr_t)loadingTexture, ImVec2(64, 64));
+        }
+        */
         
-        ImGui::SetWindowFontScale(1.5f); 
+        // Set the cursor position to the calculated centered position for the text
+        ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
+
+        ImGui::SetWindowFontScale(1.5f);
         ImGui::Text("%s", text);
         ImGui::SetWindowFontScale(1.0f);
     }
 
-
     ImGui::Spacing();
-   // ImGui::Spacing();
-
-    // If no details were found, show a popup
-    if (no_details_found) {
-        ImGui::OpenPopup("No Details Found");
-        no_details_found = false; // Reset the flag
-    }
-
-    if (ImGui::BeginPopupModal("No Details Found", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("No details found for one or more books.");
-        if (ImGui::Button("OK")) {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
-    }
-
 
     if (author_search_completed || title_search_completed) {
         displaySearchResults();

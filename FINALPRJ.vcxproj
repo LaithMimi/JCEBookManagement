@@ -159,6 +159,7 @@
     <ClInclude Include="httplib.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
+    <ClInclude Include="include\GL\glew.h" />
     <ClInclude Include="include\ImGui\backends\imgui_impl_dx9.h" />
     <ClInclude Include="include\ImGui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="include\ImGui\backends\imgui_impl_opengl3.h" />
@@ -258,9 +259,24 @@
     <Library Include="include\ImGui\examples\libs\glfw\lib-vc2010-64\glfw3.lib" />
   </ItemGroup>
   <ItemGroup>
+    <Font Include="include\ImGui\misc\fonts\Cousine-Regular.ttf" />
     <Font Include="include\ImGui\misc\fonts\Karla-Regular.ttf" />
     <Font Include="include\ImGui\misc\fonts\OpenSans-Bold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-BoldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-ExtraBold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-ExtraBoldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Italic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Light.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-LightItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Regular.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-Semibold.ttf" />
+    <Font Include="include\ImGui\misc\fonts\OpenSans-SemiboldItalic.ttf" />
+    <Font Include="include\ImGui\misc\fonts\ProggyClean.ttf" />
+    <Font Include="include\ImGui\misc\fonts\ProggyTiny.ttf" />
     <Font Include="include\ImGui\misc\fonts\Roboto-Medium.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="loading.gif" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

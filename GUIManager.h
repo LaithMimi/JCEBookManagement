@@ -7,6 +7,14 @@
 #include <atomic>
 #include <map>
 #include <vector>
+/*Tried to add loading GIF
+#include <GL/glew.h>
+#include "stb_image.h" // Include stb_image for image loading
+#include <GLFW/glfw3.h>   // GLFW for creating windows and managing input
+#include <iostream>       // For standard I/O, including std::cerr
+
+GLuint LoadTextureFromFile(const char* filename);
+*/
 
 class GUIManager {
 public:
@@ -17,8 +25,10 @@ public:
 
 private:
     BookManager& bookManager;
-    bool no_details_found = false;  // Flag to indicate if no details were found
     const Book* selected_book = nullptr;  // Pointer to the currently selected book
+   /*
+   GLuint loadingTexture;  // Declare loadingTexture as a member variable
+   */
 
     // Store search results
     std::vector<Book> title_search_results;
@@ -46,4 +56,5 @@ private:
 
     // Function to display search results and book details
     void displaySearchResults();
+
 };
